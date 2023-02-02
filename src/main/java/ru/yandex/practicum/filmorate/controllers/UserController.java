@@ -2,76 +2,65 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import service.UserService;
+import storage.InMemoryUserStorage;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 @Slf4j
 @RestController
 public class UserController {
+    @Autowired
+    private final UserService userService;
+    InMemoryUserStorage userStorage = new InMemoryUserStorage();
 
-    private final HashMap<Integer,User> users = new HashMap<>();
-    private int userid = 0;
-    private static int userPersonalId= 1;
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public User addFriend(@PathVariable("id") int id,
+                          @PathVariable("friendId") int friendId) {
+        return userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public void deleteFromFriendList(@PathVariable("id") int id,
+                                     @PathVariable("friendId") int friendId) {
+
+        userService.deleteFromFriendList(id, friendId);
+    }
+
+    @GetMapping("GET /users/{id}/friends")
+    public Set<User> getFriend(@PathVariable("id") int id) {
+        return userService.getFriendList(id);
+    }
+
+    @GetMapping("GET /users/{id}/friends/common/{otherId}")
+    public List<User> commonFriends(@PathVariable("id") int id,
+                                    @PathVariable("otherId") int otherId) {
+        return userService.returnCommonFriendsList(id, otherId);
+    }
 
     @GetMapping("/users")
-    public Collection<User> getAllUsers() {
-        return users.values();
+    public List<User> getAllUsers() {
+        return userStorage.getAllUsers();
     }
 
     @PostMapping("/users")
     public User create(@Valid @RequestBody User user) throws WrongInputException {
-        if (user.getLogin().isBlank()) {
-            throw new WrongInputException("поле login пустое");
-        } else if (user.getEmail().isBlank()) {
-            throw new WrongInputException("поле email пустое");
-        } else if (!user.getEmail().contains("@")) {
-            throw new WrongInputException("поле email не содержит @");
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new WrongInputException("В поле birthday указано будущее время");
-        } else if (user.getName() == null) {
-            user.setName(user.getLogin());
-            user.setId(userPersonalId);
-            users.put(userid,user);
-
-            userPersonalId += 1;
-            userid += 1;
-
-            log.info("Размер листа " + users.size());
-            return user;
-        } else {
-            user.setId(userPersonalId);
-            users.put(userid,user);
-
-            userPersonalId += 1;
-            userid += 1;
-            return user;
-        }
+        return userStorage.create(user);
     }
 
     @PutMapping("/users")
     public User updateUser(@RequestBody User user) throws WrongUpdateException {
-        // данный метод перебирает ключи HashMap users, если находит совпадение - заменяет value ключа на объект user,
-        // в ином случае выбрасывает исключение.
-
-        if (user != null ) {
-
-            for (Integer u : users.keySet()) {
-                if (!(users.get(u).getId() == user.getId())) {
-                    log.info("Размер листа " + users.size());
-                    throw new WrongUpdateException("");
-                }else{
-                    users.put(u, user);
-                }
-            }
-        }
-        return user;
+        return userStorage.updateUser(user);
     }
+
 }
