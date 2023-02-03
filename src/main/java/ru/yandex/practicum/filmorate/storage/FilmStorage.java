@@ -1,4 +1,4 @@
-package storage;
+package ru.yandex.practicum.filmorate.storage;
 
 
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;

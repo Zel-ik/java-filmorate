@@ -1,27 +1,23 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.Film;
-import service.FilmService;
-import storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.util.Collection;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 public class FilmController{
-    @Autowired
     private final FilmService filmService;
-    InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
+    private final InMemoryFilmStorage filmStorage;
 
 
     @PutMapping("PUT /films/{id}/like/{userId}")

@@ -1,19 +1,20 @@
-package storage;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import ru.yandex.practicum.filmorate.exceptions.UserDoesntExsistException;
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 @Component
 public class InMemoryUserStorage implements UserStorage{
 
     private final HashMap<Integer,User> users = new HashMap<>();
-    private int userid = 0;
     private static int userPersonalId= 1;
 
     public HashMap<Integer, User> getUsers() {
@@ -21,8 +22,15 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return (List<User>) users.values();
+    public Collection<User> getAllUsers() {
+        return  users.values();
+    }
+
+    public User getUserById(@PathVariable("id") int id) throws UserDoesntExsistException {
+        if(users.get(id) == null){
+            throw new UserDoesntExsistException("Ошибка 404, пользователя не существует");
+        }
+        return users.get(id);
     }
 
     @Override
@@ -31,20 +39,18 @@ public class InMemoryUserStorage implements UserStorage{
             throw new WrongInputException("поле email не содержит @");
         } else if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new WrongInputException("В поле birthday указано будущее время");
-        } else if (user.getName() == null) {
+        } else if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
             user.setId(userPersonalId);
-            users.put(userid,user);
+            users.put(userPersonalId,user);
 
             userPersonalId += 1;
-            userid += 1;
             return user;
         } else {
             user.setId(userPersonalId);
-            users.put(userid,user);
+            users.put(userPersonalId,user);
 
             userPersonalId += 1;
-            userid += 1;
             return user;
         }
     }

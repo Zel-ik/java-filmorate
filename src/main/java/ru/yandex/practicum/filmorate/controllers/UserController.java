@@ -1,28 +1,24 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.UserDoesntExsistException;
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.User;
-import service.UserService;
-import storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.*;
 
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 public class UserController {
-    @Autowired
     private final UserService userService;
-    InMemoryUserStorage userStorage = new InMemoryUserStorage();
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @PutMapping("/users/{id}/friends/{friendId}")
     public User addFriend(@PathVariable("id") int id,
@@ -37,30 +33,34 @@ public class UserController {
         userService.deleteFromFriendList(id, friendId);
     }
 
-    @GetMapping("GET /users/{id}/friends")
-    public Set<User> getFriend(@PathVariable("id") int id) {
+    @GetMapping("/users/{id}/friends")
+    public List<User> getFriendList(@PathVariable("id") int id) throws WrongInputException {
         return userService.getFriendList(id);
     }
-
-    @GetMapping("GET /users/{id}/friends/common/{otherId}")
-    public List<User> commonFriends(@PathVariable("id") int id,
-                                    @PathVariable("otherId") int otherId) {
-        return userService.returnCommonFriendsList(id, otherId);
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getFriendsList(@PathVariable("id") int id,
+                                     @PathVariable("otherId") int friendId) throws WrongInputException {
+        return userService.returnCommonFriendsList(id, friendId);
     }
 
     @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+    public Collection<User> getAllUsers() {
+        return userService.getUserStorage().getAllUsers();
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUserById(@PathVariable("id") int id) throws UserDoesntExsistException {
+        return userService.getUserStorage().getUserById(id);
     }
 
     @PostMapping("/users")
     public User create(@Valid @RequestBody User user) throws WrongInputException {
-        return userStorage.create(user);
+        return userService.getUserStorage().create(user);
     }
 
     @PutMapping("/users")
     public User updateUser(@RequestBody User user) throws WrongUpdateException {
-        return userStorage.updateUser(user);
+        return userService.getUserStorage().updateUser(user);
     }
 
 }

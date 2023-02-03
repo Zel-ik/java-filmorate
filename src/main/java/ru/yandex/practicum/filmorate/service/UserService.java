@@ -1,29 +1,32 @@
-package service;
+package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.model.User;
-import storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.*;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class UserService {
+    private final InMemoryUserStorage userStorage;
 
-    InMemoryUserStorage userStorage;
-
-    @Autowired
-    public UserService(InMemoryUserStorage userStorage) {
-        this.userStorage = userStorage;
+    public InMemoryUserStorage getUserStorage() {
+        return userStorage;
     }
 
-    public Set<User> returnALlFriend(User user) {
-        return user.getFriends();
-    }
 
     public User addFriend(int userid, int friendId) {
-        userStorage.getUsers().get(userid).setFriends(userStorage.getUsers().get(friendId));
-        userStorage.getUsers().get(friendId).setFriends(userStorage.getUsers().get(userid));
+        if(userStorage.getUsers().get(userid) != null && userStorage.getUsers().get(friendId) != null){
+            userStorage.getUsers().get(userid).setFriends(userStorage.getUsers().get(friendId));
+            userStorage.getUsers().get(friendId).setFriends(userStorage.getUsers().get(userid));
+        }
+
+        log.info("количество друзей у User " + userStorage.getUsers().get(userid).getFriends().size());
 
         return userStorage.getUsers().get(userid);
     }
@@ -33,9 +36,13 @@ public class UserService {
         userStorage.getUsers().get(friendId).getFriends().remove(userStorage.getUsers().get(id));
     }
 
-    public Set<User> getFriendList(int id) {
-        return userStorage.getUsers().get(id).getFriends();
+    public List<User> getFriendList(int id) throws WrongInputException {
+        if(userStorage.getUsers().get(id).getFriends().size() == 0){
+            throw new WrongInputException("список друзей пуст");
+        }
+        return new ArrayList<>(userStorage.getUsers().get(id).getFriends());
     }
+
 
     public List<User> returnCommonFriendsList(int id, int otherId) {
         Set<User> firstPersonFriends = new HashSet<>(userStorage.getUsers().get(id).getFriends());

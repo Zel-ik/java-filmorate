@@ -1,28 +1,26 @@
-package service;
+package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
+@RequiredArgsConstructor
+@Service
 public class FilmService {
-    InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
-    UserService userService;
+    public final InMemoryFilmStorage filmStorage;
+    public final UserService userService;
 
 
-    public FilmService(UserService userService) {
-        this.userService = userService;
-    }
 
     public Film addLike(int userId, int filmId){
         // Добавляем объект User в множество likes объекта Film
-        filmStorage.getFilms().get(filmId).setLikes(userService.userStorage.getUsers().get(userId));
+        filmStorage.getFilms().get(filmId).setLikes(userService.getUserStorage().getUsers().get(userId));
 
         return filmStorage.getFilms().get(filmId);
     }
