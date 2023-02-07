@@ -1,36 +1,46 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class FilmService {
+    @Autowired
     public final InMemoryFilmStorage filmStorage;
-    public final UserService userService;
+    @Autowired
+    public final InMemoryUserStorage userStorage;
 
+    public FilmService(InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+    }
 
-
-    public Film addLike(int userId, int filmId){
+    public void addLike(int filmId, int userId){
         // Добавляем объект User в множество likes объекта Film
-        filmStorage.getFilms().get(filmId).setLikes(userService.getUserStorage().getUsers().get(userId));
-
-        return filmStorage.getFilms().get(filmId);
+        filmStorage.getFilms().get(filmId).getLikes().add(userStorage.getUsers().get(userId));
     }
 
-    public void deleteLike(int userId, int filmId){
-        filmStorage.getFilms().get(filmId).deleteLike(userId);
+    public void deleteLike(int filmId, int userId) throws  NotFoundException {
+        if(userId < 0){
+            throw  new NotFoundException("400, Фильм не существует или Пользователь не существует");
+        }
+        if(filmStorage.getFilms().get(filmId) == null) return;
+        filmStorage.getFilms().get(filmId).getLikes().remove(userStorage.getUsers().get(userId));
     }
 
-    public List<Film> theMostPopularFilms(){
+    public List<Film> theMostPopularFilms(int count){
         List<Film> films = new ArrayList<>(filmStorage.getFilms().values());
+        // через компаратор сравниваем количество лайков объектов Film через likes.size()
         films.sort(new Comparator<Film>() {
             @Override
             public int compare(Film o1, Film o2) {
@@ -38,10 +48,17 @@ public class FilmService {
             }
         });
 
-        log.info(films + "топ 10 фильмов");
-
-        return films.stream().limit(10).collect(Collectors.toList());
+        return films.stream().limit(count).collect(Collectors.toList());
     }
 
 
+    public Film getFilm(int id) throws NotFoundException {
+        HashMap<Integer, Film> films = new HashMap<>(filmStorage.getFilms());
+        for(Film f : films.values()){
+         if(f.getId() == id){
+             return f;
+         }
+        }
+        throw new NotFoundException("фильм не найден");
+    }
 }

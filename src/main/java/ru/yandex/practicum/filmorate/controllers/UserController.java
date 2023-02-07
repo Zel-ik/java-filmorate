@@ -1,29 +1,33 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesntExsistException;
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.*;
 
 @Slf4j
-@RequiredArgsConstructor
 @RestController
 public class UserController {
+    @Autowired
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
 
     @PutMapping("/users/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable("id") int id,
-                          @PathVariable("friendId") int friendId) {
-        return userService.addFriend(id, friendId);
+    public void addFriend(@PathVariable("id") int id,
+                          @PathVariable("friendId") int friendId) throws  UserDoesntExsistException {
+
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")

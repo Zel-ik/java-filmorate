@@ -13,5 +13,5 @@ public interface FilmStorage {
 
     public Collection<Film> getAllUsers();
 
-    public Film updateUser( Film film) throws WrongUpdateException;
+    public Film updateFilm( Film film) throws WrongUpdateException;
 }

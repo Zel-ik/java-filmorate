@@ -45,7 +45,7 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
-    public Film updateUser(Film film) throws WrongUpdateException {
+    public Film updateFilm(Film film) throws WrongUpdateException {
         //данный метод перебирает ключи HashMap films, сравнивая их values с объектом film, если не находит совпадения -
         // выбрасывает error, в ином случае заменяет найденный value на объект film.
 
