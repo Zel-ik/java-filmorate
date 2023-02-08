@@ -42,8 +42,7 @@ public class UserService {
 
     public void deleteFromFriendList(int id, int friendId) {
 
-        userStorage.getUsers().get(id).getFriends().remove(userStorage.getUsers().get(friendId));
-        userStorage.getUsers().get(friendId).getFriends().remove(userStorage.getUsers().get(id));
+        userStorage.deleteFromFriendList(id, friendId);
     }
 
     public List<User> getFriendList(int id) throws WrongInputException {

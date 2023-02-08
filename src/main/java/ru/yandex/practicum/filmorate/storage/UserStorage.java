@@ -14,4 +14,6 @@ public interface UserStorage {
 
     public User updateUser( User user) throws WrongUpdateException;
 
+    public void deleteFromFriendList(int id, int friendId);
+
 }

@@ -31,11 +31,7 @@ public class FilmService {
     }
 
     public void deleteLike(int filmId, int userId) throws  NotFoundException {
-        if(userId < 0){
-            throw  new NotFoundException("400, Фильм не существует или Пользователь не существует");
-        }
-        if(filmStorage.getFilms().get(filmId) == null) return;
-        filmStorage.getFilms().get(filmId).getLikes().remove(userStorage.getUsers().get(userId));
+        filmStorage.deleteLike(filmId, userId);
     }
 
     public List<Film> theMostPopularFilms(int count){

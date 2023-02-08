@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -13,6 +15,10 @@ import java.util.HashMap;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage{
+
+    @Autowired
+    InMemoryUserStorage userStorage;
+
     private final HashMap<Integer, Film> films = new HashMap<>();
 
     private static int filmPersonalId = 1;
@@ -40,7 +46,7 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
-    public Collection<Film> getAllUsers() {
+    public Collection<Film> getAllFilms() {
         return films.values();
     }
 
@@ -60,5 +66,14 @@ public class InMemoryFilmStorage implements FilmStorage{
             }
         }
         return film;
+    }
+
+    @Override
+    public void deleteLike(int filmId, int userId) throws NotFoundException {
+        if(userId < 0){
+            throw  new NotFoundException("400, Фильм не существует или Пользователь не существует");
+        }
+        if(getFilms().get(filmId) == null) return;
+        getFilms().get(filmId).getLikes().remove(userStorage.getUsers().get(userId));
     }
 }

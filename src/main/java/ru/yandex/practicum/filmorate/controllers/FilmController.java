@@ -52,7 +52,7 @@ public class FilmController {
 
     @GetMapping("/films")
     public Collection<Film> getAllUsers() {
-        return filmService.filmStorage.getAllUsers();
+        return filmService.filmStorage.getAllFilms();
     }
 
     @PostMapping("/films")
