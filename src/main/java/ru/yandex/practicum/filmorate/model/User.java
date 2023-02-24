@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +16,7 @@ import java.util.Set;
 public class User {
     @JsonIgnoreProperties("friends")
     Set<User> friends = new HashSet<>();
+    HashMap<User, Boolean> friendsStatus = new HashMap<>();
     int id;
     @Email String email;
     @NotNull String login;

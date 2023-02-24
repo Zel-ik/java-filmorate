@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +15,8 @@ public class Film {
 
     @JsonIgnoreProperties
     Set<User> likes = new HashSet<>();
+    ArrayList<String> genre = new ArrayList<>();
+    String rating;
     int id;
     @NotNull @NotBlank String name;
     @NotNull @NotBlank String description;
