@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
-import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -33,7 +32,7 @@ public class FilmController {
     @DeleteMapping("/films/{id}/like/{userId}")
     public void deleteFilmLike
             (@PathVariable("id") int filmId,
-             @PathVariable("userId") int userId) throws  NotFoundException {
+             @PathVariable("userId") int userId) throws NotFoundException {
 
         filmService.deleteLike(filmId, userId);
     }
@@ -61,7 +60,7 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@RequestBody Film film) throws WrongUpdateException {
+    public Film updateFilm(@RequestBody Film film) throws NotFoundException {
         return filmService.filmStorage.updateFilm(film);
     }
 

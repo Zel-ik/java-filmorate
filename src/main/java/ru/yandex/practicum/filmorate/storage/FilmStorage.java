@@ -1,20 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
 
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
-import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 
 
 public interface FilmStorage {
-    public Film create(Film film) throws WrongInputException;
+    Collection<Film> findAll();
 
-    public Collection<Film> getAllFilms();
+    Film create(Film film);
 
-    public Film updateFilm( Film film) throws WrongUpdateException;
+    Film update(Film film);
 
-    public void deleteLike(int filmId, int userId) throws NotFoundException;
+    Film getFilmById(Integer id);
 }

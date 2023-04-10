@@ -1,19 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
-import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 
 public interface UserStorage {
 
-    public Collection<User> getAllUsers();
+    Collection<User> findAll();
 
-    public User create( User user) throws WrongInputException;
+    User create(User user);
 
-    public User updateUser( User user) throws WrongUpdateException;
+    User update(User user);
 
-    public void deleteFromFriendList(int id, int friendId);
+    User getUserById(Integer id);
 
 }

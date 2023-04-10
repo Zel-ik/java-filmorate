@@ -1,49 +1,46 @@
 package ru.yandex.practicum.filmorate.model;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import jakarta.validation.constraints.*;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.Map;
 
 @Data
 public class User {
-    @JsonIgnoreProperties("friends")
-    Set<User> friends = new HashSet<>();
-    HashMap<User, Boolean> friendsStatus = new HashMap<>();
-    int id;
-    @Email String email;
-    @NotNull String login;
-    String name;
-    LocalDate birthday;
+    private int id;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    @NotEmpty
+    @Email
+    private final String email;
 
-        User user = (User) o;
+    @NotBlank
+    @Pattern(regexp = "^\\S*")
+    private final String login;
 
-        if (id != user.id) return false;
-        if (!email.equals(user.email)) return false;
-        if (!login.equals(user.login)) return false;
-        if (!name.equals(user.name)) return false;
-        return birthday.equals(user.birthday);
+    private String name;
+
+    @Past
+    private final LocalDate birthday;
+
+    public User(String email, String login, String name, LocalDate birthday) {
+        this.email = email;
+        this.login = login;
+        if (name == null || name.isEmpty() || name.isBlank()) {
+            this.name = login;
+        } else {
+            this.name = name;
+        }
+        this.birthday = birthday;
     }
 
-    @Override
-    public int hashCode() {
-        int result = id;
-        result = 31 * result + email.hashCode();
-        result = 31 * result + login.hashCode();
-        result = 31 * result + name.hashCode();
-        result = 31 * result + birthday.hashCode();
-        return result;
+    public Map<String, Object> parameters() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("EMAIL", email);
+        values.put("LOGIN", login);
+        values.put("NAME", name);
+        values.put("BIRTHDAY", birthday);
+        return values;
     }
 }

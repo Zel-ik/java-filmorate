@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
@@ -30,7 +30,7 @@ public class FilmService {
         filmStorage.getFilms().get(filmId).getLikes().add(userStorage.getUsers().get(userId));
     }
 
-    public void deleteLike(int filmId, int userId) throws  NotFoundException {
+    public void deleteLike(int filmId, int userId) throws NotFoundException {
         filmStorage.deleteLike(filmId, userId);
     }
 
