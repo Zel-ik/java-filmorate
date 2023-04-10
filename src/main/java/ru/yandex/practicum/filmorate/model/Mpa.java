@@ -4,9 +4,10 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Mpa {
-    private Integer id;
-    private String name;
+    Integer id;
+    String name;
 
     public Mpa(String name) {
         this.name = name;
