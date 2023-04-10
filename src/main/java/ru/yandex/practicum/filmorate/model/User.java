@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class User {
         this.birthday = birthday;
     }
 
-    public Map<String, Object> parameters() {
+    public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
         values.put("EMAIL", email);
         values.put("LOGIN", login);

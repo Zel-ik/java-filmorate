@@ -1,34 +1,56 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.*;
 
 @Data
 public class Film {
+    private int id;
 
-    @JsonIgnoreProperties
-    Set<User> likes = new HashSet<>();
-    ArrayList<Genre> genres = new ArrayList<>();
-    int rate;
-    Map<String, Object> mpa = new HashMap<>();
-    int id;
-    @NotNull @NotBlank String name;
-    @NotNull @NotBlank String description;
-    @NotNull LocalDate releaseDate;
-    @NotNull int duration;
+    @NotEmpty
+    private final String name;
 
+    @Size(max = 200)
+    private final String description;
 
-    public void deleteLike(int userId){
-        for(User u : likes){
-            if(u.getId() == userId){
-                likes.remove(u);
-                break;
-            }
+    private final LocalDate releaseDate;
+
+    @Positive
+    private final Integer duration;
+    private Integer rate; //количество лайков
+    private Mpa mpa;
+    private Collection<Genre> genres;
+
+    public Film(String name, String description, LocalDate releaseDate, int duration, Integer rate, Mpa mpa,
+                List<Genre> genres) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        if (rate == null) {
+            this.rate = 0;
+        } else {
+            this.rate = rate;
         }
+        this.mpa = mpa;
+        if (genres == null) {
+            this.genres = new ArrayList<>();
+        } else {
+            this.genres = genres;
+        }
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("NAME", name);
+        values.put("DESCRIPTION", description);
+        values.put("RELEASE_DATE", releaseDate);
+        values.put("DURATION", duration);
+        values.put("RATE", rate);
+        values.put("MPA_ID", mpa.getId());
+        return values;
     }
 }

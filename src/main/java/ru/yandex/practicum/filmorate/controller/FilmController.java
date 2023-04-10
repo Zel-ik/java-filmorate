@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controllers;
+package ru.yandex.practicum.filmorate.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,18 +51,21 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Film> addLikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        log.info("Ставим лайк фильму - " + filmService.getFilmById(id));
         filmService.addLikeFilm(id, userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Film> deleteLikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        log.info("Удаляем лайк фильму - " + filmService.getFilmById(id));
         filmService.deleteLikeFilm(id, userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/popular")
     public List<Film> getMostPopularFilm(@RequestParam(required = false, defaultValue = "10") Integer count) {
+        log.info("Получение популярных фильмов");
         return filmService.getMostPopularFilm(count);
     }
 }

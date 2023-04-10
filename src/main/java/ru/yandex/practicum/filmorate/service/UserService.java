@@ -1,40 +1,24 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.Dao.Impl.UserDbStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
-@Slf4j
 @Service
+@AllArgsConstructor
 public class UserService {
 
-    @Autowired
-    private final UserDbStorage userDbStorage;
-    @Autowired
-    private final InMemoryUserStorage userStorage;
-
-    public UserService(UserDbStorage userDbStorage, InMemoryUserStorage userStorage) {
-        this.userDbStorage = userDbStorage;
-        this.userStorage = userStorage;
-    }
-
-    public InMemoryUserStorage getUserStorage() {
-        return userStorage;
-    }
-
-    public UserDbStorage getUserDbStorage() {
-        return userDbStorage;
-    }
+    private UserDbStorage userDbStorage;
 
     public Collection<User> findAll() {
         return userDbStorage.findAll();
     }
+
     public int create(User user) {
         return userDbStorage.create(user);
     }
@@ -43,31 +27,31 @@ public class UserService {
         correctId(user.getId());
         return userDbStorage.update(user);
     }
-    public void addFriend(Integer userId, Integer friendId) {
-        correctId(userId);
-        correctId(friendId);
-        userDbStorage.addFriend(userId, friendId);
-    }
-    public User getUserById(Integer id){
+
+    public User getUserById(Integer id) {
         return userDbStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
-    public void deleteFromFriendList(Integer id, Integer friendId) {
-        correctId(id);
-        correctId(friendId);
-        userDbStorage.deleteFromFriendList(id, friendId);
+    public Boolean addFriend(Integer idUser, Integer idFriend) {
+        correctId(idUser);
+        correctId(idFriend);
+        return userDbStorage.sendRequestFriend(idUser, idFriend);
     }
 
-    public List<User> getFriendList(Integer id){
-        correctId(id);
-        return userDbStorage.getAllFriends(id);
+    public Boolean deleteFriend(Integer idUser, Integer idFriend) {
+        correctId(idUser);
+        correctId(idFriend);
+        return userDbStorage.deleteFriend(idUser, idFriend);
     }
 
+    public List<User> getAllFriends(Integer idUser) {
+        return userDbStorage.getAllFriends(idUser);
+    }
 
-    public List<User> returnCommonFriendsList(Integer id, Integer otherId){
-        correctId(id);
-        correctId(otherId);
-        return userDbStorage.getCommonFriends(id,otherId);
+    public List<User> getCommonFriends(Integer idUser1, Integer idUser2) {
+        correctId(idUser1);
+        correctId(idUser2);
+        return userDbStorage.getCommonFriends(idUser1, idUser2);
     }
 
     private Boolean correctId(Integer id) {

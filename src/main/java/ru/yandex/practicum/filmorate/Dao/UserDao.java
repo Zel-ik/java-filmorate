@@ -1,9 +1,9 @@
-package ru.yandex.practicum.filmorate.Dao;
-
+package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,9 +16,11 @@ public interface UserDao {
 
     User update(User user);
 
-    Optional getUserById(Integer id);
+    Optional<User> getUserById(Integer id);
 
-    Boolean deleteFromFriendList(Integer userId, Integer friendId);
+    Boolean sendRequestFriend(Integer userId, Integer friendId);
+
+    Boolean deleteFriend(Integer userId, Integer friendId);
 
     List<User> getAllFriends(Integer id);
 
