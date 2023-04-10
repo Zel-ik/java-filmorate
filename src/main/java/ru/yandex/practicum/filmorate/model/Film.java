@@ -6,23 +6,27 @@ import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.*;
 
-@Data
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class Film {
-    private int id;
+    @NonFinal
+    int id;
 
     @NotEmpty
-    private final String name;
+    String name;
 
     @Size(max = 200)
-    private final String description;
+    String description;
 
-    private final LocalDate releaseDate;
+    LocalDate releaseDate;
 
     @Positive
-    private final Integer duration;
-    private Integer rate; //количество лайков
-    private Mpa mpa;
-    private Collection<Genre> genres;
+    Integer duration;
+    @NonFinal
+    Integer rate; //количество лайков
+    @NonFinal
+    Mpa mpa;
+    @NonFinal
+    Collection<Genre> genres;
 
     public Film(String name, String description, LocalDate releaseDate, int duration, Integer rate, Mpa mpa,
                 List<Genre> genres) {
