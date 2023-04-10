@@ -8,21 +8,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@FieldDefaults(makeFinal = true ,level = AccessLevel.PRIVATE)
 public class User {
-    private int id;
+    @NonFinal
+    int id;
 
     @NotEmpty
     @Email
-    private final String email;
+    String email;
 
     @NotBlank
     @Pattern(regexp = "^\\S*")
-    private final String login;
+    String login;
 
-    private String name;
+    @NonFinal
+    String name;
 
     @Past
-    private final LocalDate birthday;
+    LocalDate birthday;
 
     public User(String email, String login, String name, LocalDate birthday) {
         this.email = email;
