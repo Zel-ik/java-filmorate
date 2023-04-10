@@ -3,9 +3,10 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Genre {
-    private int id;
-    private String name;
+    int id;
+    String name;
 
     public Genre(String name) {
         this.name = name;
