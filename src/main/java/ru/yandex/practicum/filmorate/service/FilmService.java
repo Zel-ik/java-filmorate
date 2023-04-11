@@ -1,60 +1,100 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
+import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.validator.ValidationFilms;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-@Slf4j
 @Service
+@AllArgsConstructor
 public class FilmService {
-    @Autowired
-    public final InMemoryFilmStorage filmStorage;
-    @Autowired
-    public final InMemoryUserStorage userStorage;
 
-    public FilmService(InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
+    private FilmDbStorage filmDbStorage;
+    private MpaService mpaService;
+    private GenreService genreService;
 
-    public void addLike(int filmId, int userId){
-        // Добавляем объект User в множество likes объекта Film
-        filmStorage.getFilms().get(filmId).getLikes().add(userStorage.getUsers().get(userId));
-    }
-
-    public void deleteLike(int filmId, int userId) throws  NotFoundException {
-        filmStorage.deleteLike(filmId, userId);
-    }
-
-    public List<Film> theMostPopularFilms(int count){
-        List<Film> films = new ArrayList<>(filmStorage.getFilms().values());
-        // через компаратор сравниваем количество лайков объектов Film через likes.size()
-        films.sort(new Comparator<Film>() {
-            @Override
-            public int compare(Film o1, Film o2) {
-                return Integer.compare(o1.getLikes().size(), o2.getLikes().size());
-            }
-        });
-
-        return films.stream().limit(count).collect(Collectors.toList());
-    }
-
-
-    public Film getFilm(int id) throws NotFoundException {
-        HashMap<Integer, Film> films = new HashMap<>(filmStorage.getFilms());
-        for(Film f : films.values()){
-         if(f.getId() == id){
-             return f;
-         }
+    public Collection<Film> findAll() {
+        var result = filmDbStorage.findAll();
+        for (Film film : result) {
+            film.setGenres(genreService.getGenres(film.getId()));
         }
-        throw new NotFoundException("фильм не найден");
+        return result;
+    }
+
+    public Film create(Film film) {
+        ValidationFilms.validationFilms(film);
+        film.setId(filmDbStorage.create(film));
+        film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
+        List<Genre> genres = new ArrayList<>();
+        for (Genre genre : film.getGenres()) {
+            genres.add(genreService.getGenreById(genre.getId()));
+            if (!filmDbStorage.setGenre(genre.getId(), film.getId())) {
+                throw new NotFoundException("Не удалось установить жанр для фильма");
+            }
+        }
+        film.setGenres(genres);
+        return film;
+    }
+
+    public Film update(Film film) {
+        ValidationFilms.validationFilms(film);
+        correctId(film.getId());
+        film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
+        List<Genre> newGenre = new ArrayList<>();
+        for (Genre genre : film.getGenres()) {
+            if (!newGenre.contains(genreService.getGenreById(genre.getId()))) {
+                newGenre.add(genreService.getGenreById(genre.getId()));
+            }
+            if (!filmDbStorage.setGenre(genre.getId(), film.getId())) {
+                throw new NotFoundException("Не удалось установить жанр для фильма");
+            }
+        }
+        List<Genre> currentGenre = genreService.getGenres(film.getId());
+        for (Genre current : currentGenre) {
+            if (!newGenre.contains(current)) {
+                filmDbStorage.deleteGenre(current.getId(), film.getId());
+            }
+        }
+        film.setGenres(newGenre);
+        return filmDbStorage.update(film);
+    }
+
+    public Film getFilmById(Integer id) {
+        var result = filmDbStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм не найден"));
+        result.setGenres(genreService.getGenres(result.getId()));
+        return result;
+    }
+
+    public void addLikeFilm(Integer filmId, Integer userId) {
+        correctId(userId);
+        filmDbStorage.addLike(filmId, userId);
+    }
+
+    public void deleteLikeFilm(Integer filmId, Integer userId) {
+        correctId(userId);
+        filmDbStorage.deleteLike(filmId, userId);
+    }
+
+    public List<Film> getMostPopularFilm(Integer count) {
+        var result = filmDbStorage.getMostPopularFilm(count);
+        for (Film film : result) {
+            film.setGenres(genreService.getGenres(film.getId()));
+        }
+        return result;
+    }
+
+    private Boolean correctId(Integer id) {
+        if (filmDbStorage.getFilmById(id).isEmpty()) {
+            throw new NotFoundException("Id фильма отсуствует в списке");
+        } else {
+            return true;
+        }
     }
 }

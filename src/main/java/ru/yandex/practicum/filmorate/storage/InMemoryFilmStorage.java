@@ -1,79 +1,52 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
-import ru.yandex.practicum.filmorate.exceptions.WrongUpdateException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.validator.ValidationFilms;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashMap;
-
+import java.util.*;
 
 @Component
-public class InMemoryFilmStorage implements FilmStorage{
+public class InMemoryFilmStorage implements FilmStorage {
 
-    @Autowired
-    InMemoryUserStorage userStorage;
+    private final Map<Integer, Film> films = new HashMap<>();
 
-    private final HashMap<Integer, Film> films = new HashMap<>();
-
-    private static int filmPersonalId = 1;
-
-    public HashMap<Integer, Film> getFilms() {
-        return films;
-    }
+    private int generator = 1;
 
     @Override
-    public Film create(Film film) throws WrongInputException {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate pastDate = LocalDate.parse("1895-12-28", formatter);
-        if (film.getDuration() <= 0) {
-            throw new WrongInputException("Поле duration меньше нуля");
-        } else if (film.getDescription().length() > 200) {
-            throw new WrongInputException("Поле description содержит больше 200 символов");
-        } else if (film.getReleaseDate().isBefore(pastDate)) {
-            throw new WrongInputException("Поле releaseDate некорректно");
-        } else {
-            film.setId(filmPersonalId);
-            filmPersonalId += 1;
-            films.put(filmPersonalId, film);
-            return film;
-        }
-    }
-
-    @Override
-    public Collection<Film> getAllFilms() {
+    public Collection<Film> findAll() {
         return films.values();
     }
 
     @Override
-    public Film updateFilm(Film film) throws WrongUpdateException {
-        //данный метод перебирает ключи HashMap films, сравнивая их values с объектом film, если не находит совпадения -
-        // выбрасывает error, в ином случае заменяет найденный value на объект film.
-
-        if (film != null) {
-
-            for (Integer f : films.keySet()) {
-                if (!(films.get(f).getId() == film.getId())) {
-                    throw new WrongUpdateException("");
-                } else {
-                    films.put(f, film);
-                }
-            }
-        }
+    public Film create(Film film) {
+        ValidationFilms.validationFilms(film);
+        int filmId = generator++;
+        film.setId(filmId);
+        films.put(film.getId(), film);
         return film;
     }
 
     @Override
-    public void deleteLike(int filmId, int userId) throws NotFoundException {
-        if(userId < 0){
-            throw  new NotFoundException("400, Фильм не существует или Пользователь не существует");
+    public Film update(Film film) {
+        ValidationFilms.validationFilms(film);
+        notContain(film.getId());
+        films.put(film.getId(), film);
+        return film;
+    }
+
+    @Override
+    public Film getFilmById(Integer id) {
+        notContain(id);
+        return films.get(id);
+    }
+
+    private Boolean notContain(Integer id) {
+        if (!films.containsKey(id)) {
+            throw new NotFoundException("Id фильма отсуствует в списке");
+        } else {
+            return true;
         }
-        if(getFilms().get(filmId) == null) return;
-        getFilms().get(filmId).getLikes().remove(userStorage.getUsers().get(userId));
     }
 }

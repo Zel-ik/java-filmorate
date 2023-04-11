@@ -1,71 +1,64 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.UserDoesntExsistException;
-import ru.yandex.practicum.filmorate.exceptions.WrongInputException;
+import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
-@Slf4j
 @Service
+@AllArgsConstructor
 public class UserService {
-    @Autowired
-    private final InMemoryUserStorage userStorage;
 
-    public UserService(InMemoryUserStorage userStorage) {
-        this.userStorage = userStorage;
+    private UserDbStorage userDbStorage;
+
+    public Collection<User> findAll() {
+        return userDbStorage.findAll();
     }
 
-    public InMemoryUserStorage getUserStorage() {
-        return userStorage;
+    public int create(User user) {
+        return userDbStorage.create(user);
     }
 
+    public User update(User user) {
+        correctId(user.getId());
+        return userDbStorage.update(user);
+    }
 
-    public void addFriend(int userId, int friendId) throws UserDoesntExsistException {
-        if(userStorage.getUsers().get(userId) == null || userStorage.getUsers().get(friendId) == null){
-            throw new UserDoesntExsistException("пользователя/ей не существует");
+    public User getUserById(Integer id) {
+        return userDbStorage.getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+    }
+
+    public Boolean addFriend(Integer idUser, Integer idFriend) {
+        correctId(idUser);
+        correctId(idFriend);
+        return userDbStorage.sendRequestFriend(idUser, idFriend);
+    }
+
+    public Boolean deleteFriend(Integer idUser, Integer idFriend) {
+        correctId(idUser);
+        correctId(idFriend);
+        return userDbStorage.deleteFriend(idUser, idFriend);
+    }
+
+    public List<User> getAllFriends(Integer idUser) {
+        return userDbStorage.getAllFriends(idUser);
+    }
+
+    public List<User> getCommonFriends(Integer idUser1, Integer idUser2) {
+        correctId(idUser1);
+        correctId(idUser2);
+        return userDbStorage.getCommonFriends(idUser1, idUser2);
+    }
+
+    private Boolean correctId(Integer id) {
+        if (userDbStorage.getUserById(id).isEmpty()) {
+            throw new NotFoundException("Id пользователя отсуствует в списке");
+        } else {
+            return true;
         }
-        if(userId < 0 || friendId < 0){
-            throw new UserDoesntExsistException("айди меньше нуля");
-        }
-
-        userStorage.getUsers().get(userId).getFriends().add(userStorage.getUsers().get(friendId));
-        userStorage.getUsers().get(friendId).getFriends().add(userStorage.getUsers().get(userId));
-
-    }
-
-
-
-    public void deleteFromFriendList(int id, int friendId) {
-
-        userStorage.deleteFromFriendList(id, friendId);
-    }
-
-    public List<User> getFriendList(int id) throws WrongInputException {
-        if(userStorage.getUsers().get(id).getFriends().size() == 0){
-            throw new WrongInputException("список друзей пуст");
-        }
-        return new ArrayList<>(userStorage.getUsers().get(id).getFriends());
-    }
-
-
-    public List<User> returnCommonFriendsList(int id, int otherId) throws WrongInputException {
-
-        if(userStorage.getUsers().get(id).getFriends() == null ||
-                userStorage.getUsers().get(otherId).getFriends() == null){
-            throw new WrongInputException("введены неверные данные");
-        }
-        Set<User> firstPersonFriends = new HashSet<>(userStorage.getUsers().get(id).getFriends());
-        Set<User> secondPersonFriends = new HashSet<>(userStorage.getUsers().get(otherId).getFriends());
-
-        firstPersonFriends.retainAll(secondPersonFriends);
-
-
-
-        return new ArrayList<>(firstPersonFriends);
     }
 }
